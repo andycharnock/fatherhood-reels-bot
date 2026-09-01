@@ -1,4 +1,3 @@
-```python
 """Supabase access.
 
 Talks to Supabase's REST API directly over HTTP. No SDK, no blocking calls
@@ -111,4 +110,3 @@ async def count_jobs_today(chat_id: int) -> int:
         response = await client.get(query, headers=_HEADERS)
         response.raise_for_status()
         return len(response.json())
-```
