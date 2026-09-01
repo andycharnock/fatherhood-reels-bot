@@ -1,4 +1,3 @@
-```python
 """Configuration. Every value comes from an environment variable.
 
 Nothing secret is ever written in the code. Set these in Render under
@@ -71,4 +70,3 @@ WEBHOOK_SECRET = hashlib.sha256(
 
 SHOTSTACK_EDIT_URL = f"https://api.shotstack.io/edit/{SHOTSTACK_ENV}"
 SHOTSTACK_INGEST_URL = f"https://api.shotstack.io/ingest/{SHOTSTACK_ENV}"
-```
