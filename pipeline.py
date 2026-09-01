@@ -1,4 +1,3 @@
-```python
 """The pipeline. One thought in, one Reel out.
 
 Six steps, run in order, in a background task:
@@ -404,4 +403,3 @@ async def run_pipeline(job: dict, bot):
             await bot.send_message(chat_id=chat_id, text=f"Failed unexpectedly: {exc}")
         except Exception:
             log.exception("Could not report failure to Telegram")
-```
