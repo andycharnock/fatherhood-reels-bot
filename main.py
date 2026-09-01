@@ -1,4 +1,4 @@
-```python
+
 """Fatherhood Reels Bot - V0.1
 
 Text a thought. Get a Reel back. That is the whole application.
