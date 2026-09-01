@@ -1,4 +1,3 @@
-```python
 """Background footage.
 
 A plain Python list. No database table, no admin screen. To change the
@@ -27,4 +26,3 @@ def pick() -> str:
     if not BACKGROUND_URLS:
         raise RuntimeError("BACKGROUND_URLS is empty. Add at least one .mp4 URL.")
     return random.choice(BACKGROUND_URLS)
-```
