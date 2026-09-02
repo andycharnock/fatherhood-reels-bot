@@ -232,12 +232,16 @@ def build_timeline(audio_url: str, background_url: str, duration: float) -> dict
         )
 
     caption_asset = {
+
         "type": "caption",
+
         "src": "alias://narration",
+
         "font": {"size": config.CAPTION_SIZE, "color": "#ffffff"},
+
         "background": {"color": "#000000", "opacity": 0.35, "padding": 12, "borderRadius": 8},
+
         "margin": {"left": 0.1, "right": 0.1},
-        "alignment": {"horizontal": "center", "vertical": "center"},
     }
     if config.CAPTION_FONT:
         caption_asset["font"]["family"] = config.CAPTION_FONT
