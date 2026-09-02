@@ -1,8 +1,4 @@
-"""Supabase access.
-
-Talks to Supabase's REST API directly over HTTP. No SDK, no blocking calls
-inside the event loop, one dependency less to break.
-"""
+"""Supabase access."""
 
 import logging
 from datetime import datetime, timedelta, timezone
@@ -23,12 +19,6 @@ _JOBS_URL = f"{config.SUPABASE_URL}/rest/v1/jobs"
 
 
 async def insert_job(update_id: int, chat_id: int, raw_thought: str):
-    """Create a job row.
-
-    telegram_update_id has a unique constraint. If Telegram redelivers the
-    same update, the insert is ignored and this returns None, so a retry can
-    never produce a second paid render.
-    """
     headers = {**_HEADERS, "Prefer": "return=representation,resolution=ignore-duplicates"}
     payload = {
         "telegram_update_id": update_id,
@@ -50,10 +40,9 @@ async def insert_job(update_id: int, chat_id: int, raw_thought: str):
 
 
 async def set_status(job_id: str, status: str, error: str = None):
-    """Move a job to a new status and touch updated_at."""
     payload = {
         "status": status,
-        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
     }
     if error is not None:
         payload["error"] = error[:2000]
@@ -67,28 +56,24 @@ async def set_status(job_id: str, status: str, error: str = None):
 
 
 async def get_stuck_jobs():
-    """Jobs that need restarting after a crash."""
-    stale = (datetime.now(timezone.utc) - timedelta(minutes=10)).isoformat()
-    cutoff = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
-    
-    # Simpler query: just get queued jobs that aren't too old
+    stale = (datetime.now(timezone.utc) - timedelta(minutes=10)).isoformat().replace("+00:00", "Z")
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat().replace("+00:00", "Z")
     query = (
         f"{_JOBS_URL}?select=*"
         f"&status=eq.queued"
         f"&created_at=gte.{cutoff}"
         "&order=created_at.asc"
     )
-    
     async with httpx.AsyncClient(timeout=30) as client:
         response = await client.get(query, headers=_HEADERS)
         response.raise_for_status()
         return response.json()
 
+
 async def count_jobs_today(chat_id: int) -> int:
-    """How many jobs this chat has created since midnight UTC."""
     midnight = datetime.now(timezone.utc).replace(
         hour=0, minute=0, second=0, microsecond=0
-    ).isoformat()
+    ).isoformat().replace("+00:00", "Z")
     query = (
         f"{_JOBS_URL}?select=id&chat_id=eq.{chat_id}&created_at=gte.{midnight}"
     )
