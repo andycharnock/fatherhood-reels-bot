@@ -67,36 +67,22 @@ async def set_status(job_id: str, status: str, error: str = None):
 
 
 async def get_stuck_jobs():
-    """Jobs that need restarting after a crash, deploy or restart.
-
-    Anything still queued, plus anything that claimed to be working but has
-    not updated in ten minutes. Anything older than 24 hours is left alone
-    and marked failed so old work never surfaces days later.
-    """
+    """Jobs that need restarting after a crash."""
     stale = (datetime.now(timezone.utc) - timedelta(minutes=10)).isoformat()
     cutoff = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+    
+    # Simpler query: just get queued jobs that aren't too old
     query = (
         f"{_JOBS_URL}?select=*"
-        f"&or=(status.eq.queued,and(status.in.(processing,rendering),updated_at.lt.{stale}))"
+        f"&status=eq.queued"
         f"&created_at=gte.{cutoff}"
         "&order=created_at.asc"
     )
-    expired_query = (
-        f"{_JOBS_URL}?select=*"
-        f"&or=(status.eq.queued,and(status.in.(processing,rendering),updated_at.lt.{stale}))"
-        f"&created_at=lt.{cutoff}"
-    )
+    
     async with httpx.AsyncClient(timeout=30) as client:
         response = await client.get(query, headers=_HEADERS)
         response.raise_for_status()
-        jobs = response.json()
-
-        expired = await client.get(expired_query, headers=_HEADERS)
-        expired.raise_for_status()
-        for job in expired.json():
-            await set_status(job["id"], "failed", "Abandoned: older than 24 hours")
-    return jobs
-
+        return response.json()
 
 async def count_jobs_today(chat_id: int) -> int:
     """How many jobs this chat has created since midnight UTC."""
